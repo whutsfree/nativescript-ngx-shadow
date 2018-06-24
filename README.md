@@ -4,11 +4,11 @@
 [![Downloads][downloads-image]][npm-url]
 [![Twitter Follow][twitter-image]][twitter-url]
 
-[npm-image]:http://img.shields.io/npm/v/nativescript-ngx-shadow.svg
-[npm-url]:https://npmjs.org/package/nativescript-ngx-shadow
-[downloads-image]:http://img.shields.io/npm/dt/nativescript-ngx-shadow.svg
-[twitter-image]:https://img.shields.io/twitter/follow/_joshsommer.svg?style=social&label=Josh%20Sommer
-[twitter-url]:https://twitter.com/_joshsommer
+[npm-image]: http://img.shields.io/npm/v/nativescript-ngx-shadow.svg
+[npm-url]: https://npmjs.org/package/nativescript-ngx-shadow
+[downloads-image]: http://img.shields.io/npm/dt/nativescript-ngx-shadow.svg
+[twitter-image]: https://img.shields.io/twitter/follow/_joshsommer.svg?style=social&label=Josh%20Sommer
+[twitter-url]: https://twitter.com/_joshsommer
 
 This repo is a fork of @Especializa's NativeScript Shadow Directive.
 https://github.com/Especializa/nativescript-ng-shadow
@@ -203,8 +203,16 @@ Feel free to fill an issue if you want the flexibility of defining your own
 `StateListAnimator`. The motivation so far was simply put this plugin to work with
 buttons without changing the original state once they are clicked.
 
+## Plugin Development Work Flow:
+
+- Clone repository to your machine.
+- Run `npm install` to prepare the project
+- Run and deploy to your device or emulator with `npm run android` or `npm run ios`
+- Build a ngPackagr version with `npm run build`
+
 ## Changelog
 
+- 6.0.0 Fork: Now packaged with ngPackagr for Angular 6 compatabilty
 - 2.1.0 Decouple shadow logic / Override default StateListAnimator
 - 2.0.1 Fix error on old Android devices (< Lollipop)
 - 2.0.0 Density Independent Pixels / TranslationZ
