@@ -1,6 +1,6 @@
 {
   "name": "nativescript-ngx-shadow",
-  "version": "1.0.3",
+  "version": "6.0.0",
   "repository": "https://github.com/TheOriginalJosh/nativescript-ngx-shadow.git",
   "author": "Josh Sommer <joshdsommer@gmail.com>",
   "license": "MIT",
@@ -20,6 +20,6 @@
     "lib": {
       "entryFile": "src/public_api.ts"
     },
-    "dest": "../../dist"
+    "dest": "../dist"
   }
 }
