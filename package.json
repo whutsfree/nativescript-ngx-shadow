@@ -10,7 +10,9 @@
     }
   },
   "scripts": {
-    "build": "ng-packagr -p app/lib/package.json"
+    "build": "ng-packagr -p app/lib/package.json",
+    "ios": "tns run ios --syncAllFiles",
+    "android": "tns run android --syncAllFiles"
   },
   "dependencies": {
     "@angular/animations": "~5.2.0",
@@ -23,6 +25,7 @@
     "@angular/platform-browser-dynamic": "~5.2.0",
     "@angular/router": "~5.2.0",
     "nativescript-angular": "~5.3.0",
+    "nativescript-ngx-shadow": "file:./lib/",
     "nativescript-theme-core": "~1.0.4",
     "reflect-metadata": "~0.1.10",
     "rxjs": "~5.5.5",
