@@ -20,10 +20,13 @@ declare const android: any;
 export class NativeShadowDirective implements OnInit, OnChanges {
   @Input() shadow: string | AndroidData | IOSData;
   @Input() elevation?: number | string;
+  @Input() pressedElevation?: number | string;
   @Input() shape?: Shape;
   @Input() bgcolor?: string;
   @Input() cornerRadius?: number | string;
   @Input() translationZ?: number | string;
+  @Input() pressedTranslationZ?: number | string;
+  @Input() forcePressAnimation?: boolean;
   @Input() maskToBounds?: boolean;
   @Input() shadowColor?: string;
   @Input() shadowOffset?: number | string;
@@ -32,8 +35,13 @@ export class NativeShadowDirective implements OnInit, OnChanges {
 
   private loaded = false;
   private initialized = false;
+  private originalNSFn: any;
 
-  constructor(private el: ElementRef) {}
+  constructor(private el: ElementRef) {
+    if(isAndroid) {
+      this.originalNSFn = this.el.nativeElement._redrawNativeBackground; //always store the original method
+    }
+  }
 
   ngOnInit() {
     this.initializeCommonData();
@@ -67,6 +75,18 @@ export class NativeShadowDirective implements OnInit, OnChanges {
       this.ngOnInit();
     }
     this.applyShadow();
+    if (isAndroid) {
+      this.el.nativeElement._redrawNativeBackground = this.monkeyPatch;
+    }
+  }
+
+  @HostListener("unloaded")
+  onUnloaded() {
+    this.loaded = false;
+
+    if (isAndroid) {
+      this.el.nativeElement._redrawNativeBackground = this.originalNSFn;
+    }
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -75,9 +95,12 @@ export class NativeShadowDirective implements OnInit, OnChanges {
       !!changes &&
       (changes.hasOwnProperty("shadow") ||
         changes.hasOwnProperty("elevation") ||
+        changes.hasOwnProperty("pressedElevation") ||
         changes.hasOwnProperty("shape") ||
         changes.hasOwnProperty("bgcolor") ||
         changes.hasOwnProperty("cornerRadius") ||
+        changes.hasOwnProperty("pressedTranslationZ") ||
+        changes.hasOwnProperty("forcePressAnimation") ||
         changes.hasOwnProperty("translationZ") ||
         changes.hasOwnProperty("maskToBounds") ||
         changes.hasOwnProperty("shadowColor") ||
@@ -103,6 +126,11 @@ export class NativeShadowDirective implements OnInit, OnChanges {
     }
   }
 
+  private monkeyPatch = (val) => {
+    this.originalNSFn.call(this.el.nativeElement, val);
+    this.applyShadow();
+  }
+
   private applyShadow() {
     if (
       this.shadow === null ||
@@ -122,10 +150,13 @@ export class NativeShadowDirective implements OnInit, OnChanges {
 
     Shadow.apply(this.el.nativeElement, {
       elevation: this.elevation as number,
+      pressedElevation: this.pressedElevation as number,
       shape: this.shape,
       bgcolor: this.bgcolor,
       cornerRadius: this.cornerRadius,
       translationZ: this.translationZ,
+      pressedTranslationZ: this.pressedTranslationZ,
+      forcePressAnimation: this.forcePressAnimation,
       maskToBounds: this.maskToBounds,
       shadowColor: this.shadowColor,
       shadowOffset: this.shadowOffset as number,

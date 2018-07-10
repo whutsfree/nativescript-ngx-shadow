@@ -19,6 +19,9 @@ export class HomeComponent implements OnInit {
   shape = ShapeEnum;
   stdElevations: string[] = [];
   androidData: AndroidData;
+  bclass = "ex2";
+  bclass2 = "ex3";
+  bclass3 = "ex4";
 
   ngOnInit(): void {
     for (const x in Elevation) {
@@ -32,9 +35,15 @@ export class HomeComponent implements OnInit {
   getAndroidData(): AndroidData {
     return {
       elevation: this.elevation,
-      bgcolor: "#ff1744",
-      shape: ShapeEnum.OVAL
+      // bgcolor: "#ff1744",
+      // shape: ShapeEnum.OVAL
     };
+  }
+
+  toggleClass() {
+    this.bclass = this.bclass == "ex2" ? "ex3" : "ex2";
+    this.bclass2 = this.bclass2 == "ex3" ? "ex4" : "ex3";
+    this.bclass3 = this.bclass3 == "ex4" ? "ex3" : "ex4";
   }
 
   setElevation(newValue) {
@@ -42,4 +51,6 @@ export class HomeComponent implements OnInit {
     this.elevation = Elevation[this.stdElevations[picker.selectedIndex]];
     this.androidData = this.getAndroidData();
   }
+
+  dummy() {} //dummy tap function to make a view clickable
 }
