@@ -36,6 +36,7 @@ export class NativeShadowDirective implements OnInit, OnChanges {
   private loaded = false;
   private initialized = false;
   private originalNSFn: any;
+  private previousNSFn: any;
 
   constructor(private el: ElementRef) {
     if(isAndroid) {
@@ -76,6 +77,7 @@ export class NativeShadowDirective implements OnInit, OnChanges {
     }
     this.applyShadow();
     if (isAndroid) {
+      this.previousNSFn = this.el.nativeElement._redrawNativeBackground; // just to maintain compatibility with other patches
       this.el.nativeElement._redrawNativeBackground = this.monkeyPatch;
     }
   }
@@ -85,7 +87,7 @@ export class NativeShadowDirective implements OnInit, OnChanges {
     this.loaded = false;
 
     if (isAndroid) {
-      this.el.nativeElement._redrawNativeBackground = this.originalNSFn;
+      this.el.nativeElement._redrawNativeBackground = this.originalNSFn; // always revert to the original method
     }
   }
 
@@ -127,7 +129,7 @@ export class NativeShadowDirective implements OnInit, OnChanges {
   }
 
   private monkeyPatch = (val) => {
-    this.originalNSFn.call(this.el.nativeElement, val);
+    this.previousNSFn.call(this.el.nativeElement, val);
     this.applyShadow();
   }
 
