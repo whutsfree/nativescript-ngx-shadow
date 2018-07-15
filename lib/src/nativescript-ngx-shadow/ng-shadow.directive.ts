@@ -5,7 +5,9 @@ import {
   Input,
   OnChanges,
   OnInit,
-  SimpleChanges
+  SimpleChanges,
+  Renderer2,
+  AfterViewInit
 } from '@angular/core';
 import { isAndroid, isIOS } from 'tns-core-modules/platform';
 
@@ -13,11 +15,12 @@ import { AndroidData } from './common/android-data.model';
 import { IOSData } from './common/ios-data.model';
 import { Shadow } from './common/shadow';
 import { Shape, ShapeEnum } from './common/shape.enum';
-
+import { View } from 'tns-core-modules/ui/page/page';
+import { StackLayout } from 'tns-core-modules/ui/layouts/stack-layout';
 declare const android: any;
 
 @Directive({ selector: '[shadow]' })
-export class NativeShadowDirective implements OnInit, OnChanges {
+export class NativeShadowDirective implements OnInit, OnChanges, AfterViewInit {
   @Input() shadow: string | AndroidData | IOSData;
   @Input() elevation?: number | string;
   @Input() pressedElevation?: number | string;
@@ -37,8 +40,9 @@ export class NativeShadowDirective implements OnInit, OnChanges {
   private initialized = false;
   private originalNSFn: any;
   private previousNSFn: any;
+  private iosShadowRapper: View;
 
-  constructor(private el: ElementRef) {
+  constructor(private el: ElementRef, private render: Renderer2) {
     if (isAndroid) {
       this.originalNSFn = this.el.nativeElement._redrawNativeBackground; //always store the original method
     }
@@ -82,6 +86,24 @@ export class NativeShadowDirective implements OnInit, OnChanges {
     }
   }
 
+  private addIosWrapper() {
+    if (isIOS) {
+      console.log(' Apply ios wrapper');
+
+      const originalElement = this.el.nativeElement as View;
+
+      this.iosShadowRapper = this.render.createElement(
+        'StackLayout'
+      ) as StackLayout;
+
+      // wrappingElement.cssClasses = mainElement.cssClasses;
+      const parent = originalElement.parentNode;
+      this.render.insertBefore(parent, this.iosShadowRapper, originalElement);
+      this.render.removeChild(parent, originalElement);
+      this.render.appendChild(this.iosShadowRapper, originalElement);
+    }
+  }
+
   @HostListener('unloaded')
   onUnloaded() {
     this.loaded = false;
@@ -90,6 +112,10 @@ export class NativeShadowDirective implements OnInit, OnChanges {
       this.el.nativeElement._redrawNativeBackground = this.originalNSFn; // always revert to the original method
     }
   }
+  ngAfterViewInit() {
+    this.addIosWrapper();
+  }
+
   ngOnChanges(changes: SimpleChanges) {
     if (
       this.loaded &&
@@ -149,21 +175,27 @@ export class NativeShadowDirective implements OnInit, OnChanges {
       }
     }
 
-    Shadow.apply(this.el.nativeElement, {
-      elevation: this.elevation as number,
-      pressedElevation: this.pressedElevation as number,
-      shape: this.shape,
-      bgcolor: this.bgcolor,
-      cornerRadius: this.cornerRadius,
-      translationZ: this.translationZ,
-      pressedTranslationZ: this.pressedTranslationZ,
-      forcePressAnimation: this.forcePressAnimation,
-      maskToBounds: this.maskToBounds,
-      shadowColor: this.shadowColor,
-      shadowOffset: this.shadowOffset as number,
-      shadowOpacity: this.shadowOpacity as number,
-      shadowRadius: this.shadowRadius as number
-    });
+    const viewToApplyShadowTo = isIOS
+      ? this.iosShadowRapper
+      : this.el.nativeElement;
+
+    if (viewToApplyShadowTo) {
+      Shadow.apply(viewToApplyShadowTo, {
+        elevation: this.elevation as number,
+        pressedElevation: this.pressedElevation as number,
+        shape: this.shape,
+        bgcolor: this.bgcolor,
+        cornerRadius: this.cornerRadius,
+        translationZ: this.translationZ,
+        pressedTranslationZ: this.pressedTranslationZ,
+        forcePressAnimation: this.forcePressAnimation,
+        maskToBounds: this.maskToBounds,
+        shadowColor: this.shadowColor,
+        shadowOffset: this.shadowOffset as number,
+        shadowOpacity: this.shadowOpacity as number,
+        shadowRadius: this.shadowRadius as number
+      });
+    }
   }
 
   private initializeCommonData() {
