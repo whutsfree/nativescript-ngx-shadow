@@ -6,17 +6,17 @@ import {
   OnChanges,
   OnInit,
   SimpleChanges
-} from "@angular/core";
-import { isAndroid, isIOS } from "tns-core-modules/platform";
+} from '@angular/core';
+import { isAndroid, isIOS } from 'tns-core-modules/platform';
 
-import { AndroidData } from "./common/android-data.model";
-import { IOSData } from "./common/ios-data.model";
-import { Shadow } from "./common/shadow";
-import { Shape, ShapeEnum } from "./common/shape.enum";
+import { AndroidData } from './common/android-data.model';
+import { IOSData } from './common/ios-data.model';
+import { Shadow } from './common/shadow';
+import { Shape, ShapeEnum } from './common/shape.enum';
 
 declare const android: any;
 
-@Directive({ selector: "[shadow]" })
+@Directive({ selector: '[shadow]' })
 export class NativeShadowDirective implements OnInit, OnChanges {
   @Input() shadow: string | AndroidData | IOSData;
   @Input() elevation?: number | string;
@@ -39,7 +39,7 @@ export class NativeShadowDirective implements OnInit, OnChanges {
   private previousNSFn: any;
 
   constructor(private el: ElementRef) {
-    if(isAndroid) {
+    if (isAndroid) {
       this.originalNSFn = this.el.nativeElement._redrawNativeBackground; //always store the original method
     }
   }
@@ -62,7 +62,7 @@ export class NativeShadowDirective implements OnInit, OnChanges {
     this.initialized = true;
   }
 
-  @HostListener("loaded")
+  @HostListener('loaded')
   onLoaded() {
     this.loaded = true;
     // Weirdly ngOnInit isn't called on iOS on demo app
@@ -82,7 +82,7 @@ export class NativeShadowDirective implements OnInit, OnChanges {
     }
   }
 
-  @HostListener("unloaded")
+  @HostListener('unloaded')
   onUnloaded() {
     this.loaded = false;
 
@@ -90,30 +90,29 @@ export class NativeShadowDirective implements OnInit, OnChanges {
       this.el.nativeElement._redrawNativeBackground = this.originalNSFn; // always revert to the original method
     }
   }
-
   ngOnChanges(changes: SimpleChanges) {
     if (
       this.loaded &&
       !!changes &&
-      (changes.hasOwnProperty("shadow") ||
-        changes.hasOwnProperty("elevation") ||
-        changes.hasOwnProperty("pressedElevation") ||
-        changes.hasOwnProperty("shape") ||
-        changes.hasOwnProperty("bgcolor") ||
-        changes.hasOwnProperty("cornerRadius") ||
-        changes.hasOwnProperty("pressedTranslationZ") ||
-        changes.hasOwnProperty("forcePressAnimation") ||
-        changes.hasOwnProperty("translationZ") ||
-        changes.hasOwnProperty("maskToBounds") ||
-        changes.hasOwnProperty("shadowColor") ||
-        changes.hasOwnProperty("shadowOffset") ||
-        changes.hasOwnProperty("shadowOpacity") ||
-        changes.hasOwnProperty("shadowRadius"))
+      (changes.hasOwnProperty('shadow') ||
+        changes.hasOwnProperty('elevation') ||
+        changes.hasOwnProperty('pressedElevation') ||
+        changes.hasOwnProperty('shape') ||
+        changes.hasOwnProperty('bgcolor') ||
+        changes.hasOwnProperty('cornerRadius') ||
+        changes.hasOwnProperty('pressedTranslationZ') ||
+        changes.hasOwnProperty('forcePressAnimation') ||
+        changes.hasOwnProperty('translationZ') ||
+        changes.hasOwnProperty('maskToBounds') ||
+        changes.hasOwnProperty('shadowColor') ||
+        changes.hasOwnProperty('shadowOffset') ||
+        changes.hasOwnProperty('shadowOpacity') ||
+        changes.hasOwnProperty('shadowRadius'))
     ) {
       if (
-        changes.hasOwnProperty("shadow") &&
-        !changes.hasOwnProperty("elevation") &&
-        typeof changes.shadow.currentValue === "number"
+        changes.hasOwnProperty('shadow') &&
+        !changes.hasOwnProperty('elevation') &&
+        typeof changes.shadow.currentValue === 'number'
       ) {
         this.elevation = changes.shadow.currentValue;
       }
@@ -128,16 +127,16 @@ export class NativeShadowDirective implements OnInit, OnChanges {
     }
   }
 
-  private monkeyPatch = (val) => {
+  private monkeyPatch = val => {
     this.previousNSFn.call(this.el.nativeElement, val);
     this.applyShadow();
-  }
+  };
 
   private applyShadow() {
     if (
       this.shadow === null ||
       this.shadow === undefined ||
-      (this.shadow === "" && !this.elevation)
+      (this.shadow === '' && !this.elevation)
     ) {
       return;
     }
@@ -169,11 +168,11 @@ export class NativeShadowDirective implements OnInit, OnChanges {
 
   private initializeCommonData() {
     const tShadow = typeof this.shadow;
-    if ((tShadow === "string" || tShadow === "number") && !this.elevation) {
+    if ((tShadow === 'string' || tShadow === 'number') && !this.elevation) {
       this.elevation = this.shadow ? parseInt(this.shadow as string, 10) : 2;
     }
     const tElevation = typeof this.elevation;
-    if (tElevation === "string" || tElevation === "number") {
+    if (tElevation === 'string' || tElevation === 'number') {
       this.elevation = this.elevation
         ? parseInt(this.elevation as string, 10)
         : 2;
@@ -181,22 +180,22 @@ export class NativeShadowDirective implements OnInit, OnChanges {
   }
 
   private initializeAndroidData() {
-    if (typeof this.cornerRadius === "string") {
+    if (typeof this.cornerRadius === 'string') {
       this.cornerRadius = parseInt(this.cornerRadius, 10);
     }
-    if (typeof this.translationZ === "string") {
+    if (typeof this.translationZ === 'string') {
       this.translationZ = parseInt(this.translationZ, 10);
     }
   }
 
   private initializeIOSData() {
-    if (typeof this.shadowOffset === "string") {
+    if (typeof this.shadowOffset === 'string') {
       this.shadowOffset = parseFloat(this.shadowOffset);
     }
-    if (typeof this.shadowOpacity === "string") {
+    if (typeof this.shadowOpacity === 'string') {
       this.shadowOpacity = parseFloat(this.shadowOpacity);
     }
-    if (typeof this.shadowRadius === "string") {
+    if (typeof this.shadowRadius === 'string') {
       this.shadowRadius = parseFloat(this.shadowRadius);
     }
   }
