@@ -88,8 +88,6 @@ export class NativeShadowDirective implements OnInit, OnChanges, AfterViewInit {
 
   private addIosWrapper() {
     if (isIOS) {
-      console.log(' Apply ios wrapper');
-
       const originalElement = this.el.nativeElement as View;
 
       this.iosShadowRapper = this.render.createElement(
