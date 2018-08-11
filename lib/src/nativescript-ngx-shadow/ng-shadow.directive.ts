@@ -5,19 +5,22 @@ import {
   Input,
   OnChanges,
   OnInit,
-  SimpleChanges
-} from "@angular/core";
-import { isAndroid, isIOS } from "tns-core-modules/platform";
+  SimpleChanges,
+  Renderer2,
+  AfterViewInit
+} from '@angular/core';
+import { isAndroid, isIOS } from 'tns-core-modules/platform';
 
-import { AndroidData } from "./common/android-data.model";
-import { IOSData } from "./common/ios-data.model";
-import { Shadow } from "./common/shadow";
-import { Shape, ShapeEnum } from "./common/shape.enum";
-
+import { AndroidData } from './common/android-data.model';
+import { IOSData } from './common/ios-data.model';
+import { Shadow } from './common/shadow';
+import { Shape, ShapeEnum } from './common/shape.enum';
+import { View } from 'tns-core-modules/ui/page/page';
+import { StackLayout } from 'tns-core-modules/ui/layouts/stack-layout';
 declare const android: any;
 
-@Directive({ selector: "[shadow]" })
-export class NativeShadowDirective implements OnInit, OnChanges {
+@Directive({ selector: '[shadow]' })
+export class NativeShadowDirective implements OnInit, OnChanges, AfterViewInit {
   @Input() shadow: string | AndroidData | IOSData;
   @Input() elevation?: number | string;
   @Input() pressedElevation?: number | string;
@@ -37,9 +40,10 @@ export class NativeShadowDirective implements OnInit, OnChanges {
   private initialized = false;
   private originalNSFn: any;
   private previousNSFn: any;
+  private iosShadowRapper: View;
 
-  constructor(private el: ElementRef) {
-    if(isAndroid) {
+  constructor(private el: ElementRef, private render: Renderer2) {
+    if (isAndroid) {
       this.originalNSFn = this.el.nativeElement._redrawNativeBackground; //always store the original method
     }
   }
@@ -62,7 +66,7 @@ export class NativeShadowDirective implements OnInit, OnChanges {
     this.initialized = true;
   }
 
-  @HostListener("loaded")
+  @HostListener('loaded')
   onLoaded() {
     this.loaded = true;
     // Weirdly ngOnInit isn't called on iOS on demo app
@@ -82,7 +86,23 @@ export class NativeShadowDirective implements OnInit, OnChanges {
     }
   }
 
-  @HostListener("unloaded")
+  private addIosWrapper() {
+    if (isIOS) {
+      const originalElement = this.el.nativeElement as View;
+
+      this.iosShadowRapper = this.render.createElement(
+        'StackLayout'
+      ) as StackLayout;
+
+      // wrappingElement.cssClasses = mainElement.cssClasses;
+      const parent = originalElement.parentNode;
+      this.render.insertBefore(parent, this.iosShadowRapper, originalElement);
+      this.render.removeChild(parent, originalElement);
+      this.render.appendChild(this.iosShadowRapper, originalElement);
+    }
+  }
+
+  @HostListener('unloaded')
   onUnloaded() {
     this.loaded = false;
 
@@ -90,30 +110,33 @@ export class NativeShadowDirective implements OnInit, OnChanges {
       this.el.nativeElement._redrawNativeBackground = this.originalNSFn; // always revert to the original method
     }
   }
+  ngAfterViewInit() {
+    this.addIosWrapper();
+  }
 
   ngOnChanges(changes: SimpleChanges) {
     if (
       this.loaded &&
       !!changes &&
-      (changes.hasOwnProperty("shadow") ||
-        changes.hasOwnProperty("elevation") ||
-        changes.hasOwnProperty("pressedElevation") ||
-        changes.hasOwnProperty("shape") ||
-        changes.hasOwnProperty("bgcolor") ||
-        changes.hasOwnProperty("cornerRadius") ||
-        changes.hasOwnProperty("pressedTranslationZ") ||
-        changes.hasOwnProperty("forcePressAnimation") ||
-        changes.hasOwnProperty("translationZ") ||
-        changes.hasOwnProperty("maskToBounds") ||
-        changes.hasOwnProperty("shadowColor") ||
-        changes.hasOwnProperty("shadowOffset") ||
-        changes.hasOwnProperty("shadowOpacity") ||
-        changes.hasOwnProperty("shadowRadius"))
+      (changes.hasOwnProperty('shadow') ||
+        changes.hasOwnProperty('elevation') ||
+        changes.hasOwnProperty('pressedElevation') ||
+        changes.hasOwnProperty('shape') ||
+        changes.hasOwnProperty('bgcolor') ||
+        changes.hasOwnProperty('cornerRadius') ||
+        changes.hasOwnProperty('pressedTranslationZ') ||
+        changes.hasOwnProperty('forcePressAnimation') ||
+        changes.hasOwnProperty('translationZ') ||
+        changes.hasOwnProperty('maskToBounds') ||
+        changes.hasOwnProperty('shadowColor') ||
+        changes.hasOwnProperty('shadowOffset') ||
+        changes.hasOwnProperty('shadowOpacity') ||
+        changes.hasOwnProperty('shadowRadius'))
     ) {
       if (
-        changes.hasOwnProperty("shadow") &&
-        !changes.hasOwnProperty("elevation") &&
-        typeof changes.shadow.currentValue === "number"
+        changes.hasOwnProperty('shadow') &&
+        !changes.hasOwnProperty('elevation') &&
+        typeof changes.shadow.currentValue === 'number'
       ) {
         this.elevation = changes.shadow.currentValue;
       }
@@ -128,16 +151,16 @@ export class NativeShadowDirective implements OnInit, OnChanges {
     }
   }
 
-  private monkeyPatch = (val) => {
+  private monkeyPatch = val => {
     this.previousNSFn.call(this.el.nativeElement, val);
     this.applyShadow();
-  }
+  };
 
   private applyShadow() {
     if (
       this.shadow === null ||
       this.shadow === undefined ||
-      (this.shadow === "" && !this.elevation)
+      (this.shadow === '' && !this.elevation)
     ) {
       return;
     }
@@ -150,30 +173,36 @@ export class NativeShadowDirective implements OnInit, OnChanges {
       }
     }
 
-    Shadow.apply(this.el.nativeElement, {
-      elevation: this.elevation as number,
-      pressedElevation: this.pressedElevation as number,
-      shape: this.shape,
-      bgcolor: this.bgcolor,
-      cornerRadius: this.cornerRadius,
-      translationZ: this.translationZ,
-      pressedTranslationZ: this.pressedTranslationZ,
-      forcePressAnimation: this.forcePressAnimation,
-      maskToBounds: this.maskToBounds,
-      shadowColor: this.shadowColor,
-      shadowOffset: this.shadowOffset as number,
-      shadowOpacity: this.shadowOpacity as number,
-      shadowRadius: this.shadowRadius as number
-    });
+    const viewToApplyShadowTo = isIOS
+      ? this.iosShadowRapper
+      : this.el.nativeElement;
+
+    if (viewToApplyShadowTo) {
+      Shadow.apply(viewToApplyShadowTo, {
+        elevation: this.elevation as number,
+        pressedElevation: this.pressedElevation as number,
+        shape: this.shape,
+        bgcolor: this.bgcolor,
+        cornerRadius: this.cornerRadius,
+        translationZ: this.translationZ,
+        pressedTranslationZ: this.pressedTranslationZ,
+        forcePressAnimation: this.forcePressAnimation,
+        maskToBounds: this.maskToBounds,
+        shadowColor: this.shadowColor,
+        shadowOffset: this.shadowOffset as number,
+        shadowOpacity: this.shadowOpacity as number,
+        shadowRadius: this.shadowRadius as number
+      });
+    }
   }
 
   private initializeCommonData() {
     const tShadow = typeof this.shadow;
-    if ((tShadow === "string" || tShadow === "number") && !this.elevation) {
+    if ((tShadow === 'string' || tShadow === 'number') && !this.elevation) {
       this.elevation = this.shadow ? parseInt(this.shadow as string, 10) : 2;
     }
     const tElevation = typeof this.elevation;
-    if (tElevation === "string" || tElevation === "number") {
+    if (tElevation === 'string' || tElevation === 'number') {
       this.elevation = this.elevation
         ? parseInt(this.elevation as string, 10)
         : 2;
@@ -181,22 +210,22 @@ export class NativeShadowDirective implements OnInit, OnChanges {
   }
 
   private initializeAndroidData() {
-    if (typeof this.cornerRadius === "string") {
+    if (typeof this.cornerRadius === 'string') {
       this.cornerRadius = parseInt(this.cornerRadius, 10);
     }
-    if (typeof this.translationZ === "string") {
+    if (typeof this.translationZ === 'string') {
       this.translationZ = parseInt(this.translationZ, 10);
     }
   }
 
   private initializeIOSData() {
-    if (typeof this.shadowOffset === "string") {
+    if (typeof this.shadowOffset === 'string') {
       this.shadowOffset = parseFloat(this.shadowOffset);
     }
-    if (typeof this.shadowOpacity === "string") {
+    if (typeof this.shadowOpacity === 'string') {
       this.shadowOpacity = parseFloat(this.shadowOpacity);
     }
-    if (typeof this.shadowRadius === "string") {
+    if (typeof this.shadowRadius === 'string') {
       this.shadowRadius = parseFloat(this.shadowRadius);
     }
   }
