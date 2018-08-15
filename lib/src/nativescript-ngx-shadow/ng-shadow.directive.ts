@@ -35,6 +35,8 @@ export class NativeShadowDirective implements OnInit, OnChanges, AfterViewInit {
   @Input() shadowOffset?: number | string;
   @Input() shadowOpacity?: number | string;
   @Input() shadowRadius?: number | string;
+  @Input() useShadowPath?: boolean;
+  @Input() rasterize?: boolean;
 
   private loaded = false;
   private initialized = false;
@@ -131,7 +133,9 @@ export class NativeShadowDirective implements OnInit, OnChanges, AfterViewInit {
         changes.hasOwnProperty('shadowColor') ||
         changes.hasOwnProperty('shadowOffset') ||
         changes.hasOwnProperty('shadowOpacity') ||
-        changes.hasOwnProperty('shadowRadius'))
+        changes.hasOwnProperty('shadowRadius') ||
+        changes.hasOwnProperty('rasterize') ||
+        changes.hasOwnProperty('useShadowMap'))
     ) {
       if (
         changes.hasOwnProperty('shadow') &&
@@ -191,7 +195,9 @@ export class NativeShadowDirective implements OnInit, OnChanges, AfterViewInit {
         shadowColor: this.shadowColor,
         shadowOffset: this.shadowOffset as number,
         shadowOpacity: this.shadowOpacity as number,
-        shadowRadius: this.shadowRadius as number
+        shadowRadius: this.shadowRadius as number,
+        rasterize: this.rasterize,
+        useShadowPath: this.useShadowPath
       });
     }
   }
@@ -244,5 +250,7 @@ export class NativeShadowDirective implements OnInit, OnChanges, AfterViewInit {
     this.shadowOffset = data.shadowOffset || this.shadowOffset;
     this.shadowOpacity = data.shadowOpacity || this.shadowOpacity;
     this.shadowRadius = data.shadowRadius || this.shadowRadius;
+    this.rasterize = data.rasterize || this.rasterize;
+    this.useShadowPath = data.useShadowPath || this.useShadowPath;
   }
 }

@@ -4,13 +4,14 @@ import { AndroidData } from "./android-data.model";
 import { IOSData } from "./ios-data.model";
 import { ShapeEnum } from './shape.enum';
 import { Length } from 'tns-core-modules/ui/page/page';
-import { isAndroid } from "tns-core-modules/platform";
+import { isAndroid, screen } from "tns-core-modules/platform";
 
 declare const android: any;
 declare const java: any;
 declare const CGSizeMake: any;
 declare const UIScreen: any;
 declare const Array: any;
+declare const UIBezierPath: any;
 
 let LayeredShadow;
 let PlainShadow;
@@ -49,6 +50,8 @@ export class Shadow {
         pressedTranslationZ: (data as AndroidData).pressedTranslationZ || Shadow.DEFAULT_PRESSED_ELEVATION,
         shadowColor: (data as IOSData).shadowColor ||
           Shadow.DEFAULT_SHADOW_COLOR,
+        useShadowPath: ((data as IOSData).useShadowPath !== undefined ? (data as IOSData).useShadowPath : true),
+        rasterize: ((data as IOSData).rasterize !== undefined ? (data as IOSData).rasterize : false)
       },
     );
   }
@@ -191,6 +194,13 @@ export class Shadow {
       data.shadowRadius ?
         parseFloat(String(data.shadowRadius)) :
         0.66 * elevation - 0.5;
+    nativeView.layer.shouldRasterize = true;
+    nativeView.layer.rasterizationScale = screen.mainScreen.scale;
+    let shadowPath = null;
+    if(data.useShadowPath) {
+      shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(nativeView.bounds, nativeView.layer.shadowRadius).cgPath;
+    }
+    nativeView.layer.shadowPath = shadowPath;
   }
 
   static androidDipToPx(nativeView: any, dip: number) {
