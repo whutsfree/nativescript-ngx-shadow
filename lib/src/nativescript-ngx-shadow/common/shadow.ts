@@ -194,7 +194,7 @@ export class Shadow {
       data.shadowRadius ?
         parseFloat(String(data.shadowRadius)) :
         0.66 * elevation - 0.5;
-    nativeView.layer.shouldRasterize = true;
+    nativeView.layer.shouldRasterize = data.rasterize;
     nativeView.layer.rasterizationScale = screen.mainScreen.scale;
     let shadowPath = null;
     if(data.useShadowPath) {
