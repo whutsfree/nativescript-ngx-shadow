@@ -7,7 +7,8 @@ import {
   OnInit,
   SimpleChanges,
   Renderer2,
-  AfterViewInit
+  AfterViewInit,
+  OnDestroy
 } from '@angular/core';
 import { isAndroid, isIOS } from 'tns-core-modules/platform';
 
@@ -17,10 +18,11 @@ import { Shadow } from './common/shadow';
 import { Shape, ShapeEnum } from './common/shape.enum';
 import { View } from 'tns-core-modules/ui/page/page';
 import { StackLayout } from 'tns-core-modules/ui/layouts/stack-layout';
+import { addWeakEventListener, removeWeakEventListener } from "tns-core-modules/ui/core/weak-event-listener";
 declare const android: any;
 
 @Directive({ selector: '[shadow]' })
-export class NativeShadowDirective implements OnInit, OnChanges, AfterViewInit {
+export class NativeShadowDirective implements OnInit, OnChanges, AfterViewInit, OnDestroy {
   @Input() shadow: string | AndroidData | IOSData;
   @Input() elevation?: number | string;
   @Input() pressedElevation?: number | string;
@@ -43,6 +45,7 @@ export class NativeShadowDirective implements OnInit, OnChanges, AfterViewInit {
   private originalNSFn: any;
   private previousNSFn: any;
   private iosShadowRapper: View;
+  private eventsBound = false;
 
   constructor(private el: ElementRef, private render: Renderer2) {
     if (isAndroid) {
@@ -50,25 +53,57 @@ export class NativeShadowDirective implements OnInit, OnChanges, AfterViewInit {
     }
   }
 
-  ngOnInit() {
-    this.initializeCommonData();
-    if (isAndroid) {
-      this.initializeAndroidData();
-    } else if (isIOS) {
-      this.initializeIOSData();
-    }
-    if (this.shadow && (this.shadow as AndroidData | IOSData).elevation) {
+  ngOnInit() { // RadListView calls this multiple times for the same view
+    if (!this.initialized) {
+      this.initialized = true;
+      this.initializeCommonData();
       if (isAndroid) {
-        this.loadFromAndroidData(this.shadow as AndroidData);
+        this.initializeAndroidData();
       } else if (isIOS) {
-        this.loadFromIOSData(this.shadow as IOSData);
+        this.initializeIOSData();
       }
+      if (this.shadow && (this.shadow as AndroidData | IOSData).elevation) {
+        if (isAndroid) {
+          this.loadFromAndroidData(this.shadow as AndroidData);
+        } else if (isIOS) {
+          this.loadFromIOSData(this.shadow as IOSData);
+        }
+      }
+      this.bindEvents();
     }
-    this.applyShadow();
-    this.initialized = true;
   }
 
-  @HostListener('loaded')
+  ngOnDestroy() {
+    if (this.initialized) {
+      this.unbindEvents();
+      this.initialized = false;
+    }
+  }
+
+  // NS ListViews create elements dynamically
+  // loaded and unloaded are called before angular is "ready"
+  // https://github.com/NativeScript/nativescript-angular/issues/1221#issuecomment-422813111
+  // So we ensure we're running loaded/unloaded events outside of angular
+  bindEvents() {
+    if (!this.eventsBound) {
+      addWeakEventListener(this.el.nativeElement, View.loadedEvent, this.onLoaded, this);
+      addWeakEventListener(this.el.nativeElement, View.unloadedEvent, this.onUnloaded, this);
+      this.eventsBound = true;
+      // in some cases, the element is already loaded by time of binding
+      if (this.el.nativeElement.isLoaded) {
+        this.onLoaded();
+      }
+    }
+  }
+
+  unbindEvents() {
+    if (this.eventsBound) {
+      removeWeakEventListener(this.el.nativeElement, View.loadedEvent, this.onLoaded, this);
+      removeWeakEventListener(this.el.nativeElement, View.unloadedEvent, this.onUnloaded, this);
+      this.eventsBound = false;
+    }
+  }
+
   onLoaded() {
     this.loaded = true;
     // Weirdly ngOnInit isn't called on iOS on demo app
@@ -104,7 +139,6 @@ export class NativeShadowDirective implements OnInit, OnChanges, AfterViewInit {
     }
   }
 
-  @HostListener('unloaded')
   onUnloaded() {
     this.loaded = false;
 
