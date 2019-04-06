@@ -21,7 +21,7 @@ if (isAndroid) {
   PlainShadow = android.graphics.drawable.GradientDrawable.extend({});
 }
 
-const classCache: { [id: string]: { class: any, fieldCache: { [id: string]: any } } } = {};
+const classCache: { [id: string]: { class: any, fieldCache: { [id: string]: number } } } = {};
 // https://github.com/NativeScript/android-runtime/issues/1330
 function getAndroidR(rtype: string, field: string): number {
   const className = "android.R$" + rtype;
@@ -32,9 +32,9 @@ function getAndroidR(rtype: string, field: string): number {
     };
   }
   if(!classCache[className].fieldCache.hasOwnProperty(field)) {
-    classCache[className].fieldCache[field] = classCache[className].class.getField(field);
+    classCache[className].fieldCache[field] = +classCache[className].class.getField(field).get(null);
   }
-  return +classCache[className].fieldCache[field].get(null);
+  return classCache[className].fieldCache[field];
 }
 
 export class Shadow {
