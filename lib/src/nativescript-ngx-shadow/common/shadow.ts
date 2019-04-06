@@ -21,9 +21,20 @@ if (isAndroid) {
   PlainShadow = android.graphics.drawable.GradientDrawable.extend({});
 }
 
+const classCache: { [id: string]: { class: any, fieldCache: { [id: string]: any } } } = {};
 // https://github.com/NativeScript/android-runtime/issues/1330
 function getAndroidR(rtype: string, field: string): number {
-  return +java.lang.Class.forName("android.R$" + rtype).getField(field).get(null);
+  const className = "android.R$" + rtype;
+  if (!classCache.hasOwnProperty(className)) {
+    classCache[className] = {
+      class: java.lang.Class.forName(className),
+      fieldCache: {}
+    };
+  }
+  if(!classCache[className].fieldCache.hasOwnProperty(field)) {
+    classCache[className].fieldCache[field] = classCache[className].class.getField(field);
+  }
+  return +classCache[className].fieldCache[field].get(null);
 }
 
 export class Shadow {
@@ -202,7 +213,7 @@ export class Shadow {
     nativeView.layer.shouldRasterize = data.rasterize;
     nativeView.layer.rasterizationScale = screen.mainScreen.scale;
     let shadowPath = null;
-    if(data.useShadowPath) {
+    if (data.useShadowPath) {
       shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(nativeView.bounds, nativeView.layer.shadowRadius).cgPath;
     }
     nativeView.layer.shadowPath = shadowPath;
