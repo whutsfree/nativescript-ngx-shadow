@@ -21,6 +21,11 @@ if (isAndroid) {
   PlainShadow = android.graphics.drawable.GradientDrawable.extend({});
 }
 
+// https://github.com/NativeScript/android-runtime/issues/1330
+function getAndroidR(rtype: string, field: string): number {
+  return +java.lang.Class.forName("android.R$" + rtype).getField(field).get(null);
+}
+
 export class Shadow {
   static DEFAULT_SHAPE = ShapeEnum.RECTANGLE;
   static DEFAULT_BGCOLOR = '#FFFFFF';
@@ -138,7 +143,7 @@ export class Shadow {
 
     const ObjectAnimator = android.animation.ObjectAnimator;
     const AnimatorSet = android.animation.AnimatorSet;
-    const shortAnimTime = android.R.integer.config_shortAnimTime;
+    const shortAnimTime = getAndroidR("integer", "config_shortAnimTime");
 
     const buttonDuration =
       nativeView.getContext().getResources().getInteger(shortAnimTime) / 2;
@@ -169,10 +174,10 @@ export class Shadow {
     ]));
 
     sla.addState(
-      [android.R.attr.state_pressed, android.R.attr.state_enabled],
+      [getAndroidR("attr", "state_pressed"), getAndroidR("attr", "state_enabled")],
       pressedSet,
     );
-    sla.addState([android.R.attr.state_enabled], notPressedSet);
+    sla.addState([getAndroidR("attr", "state_enabled")], notPressedSet);
     sla.addState([], defaultSet);
     nativeView.setStateListAnimator(sla);
   }
