@@ -1,10 +1,10 @@
-import { Color } from 'tns-core-modules/color';
+import { Color } from '@nativescript/core/color';
 
 import { AndroidData } from "./android-data.model";
 import { IOSData } from "./ios-data.model";
 import { ShapeEnum } from './shape.enum';
-import { Length } from 'tns-core-modules/ui/page/page';
-import { isAndroid, screen } from "tns-core-modules/platform";
+import { Length } from '@nativescript/core/ui/page/page';
+import { isAndroid, screen } from "@nativescript/core/platform";
 
 let LayeredShadow;
 let PlainShadow;

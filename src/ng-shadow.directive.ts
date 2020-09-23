@@ -10,15 +10,15 @@ import {
   AfterViewInit,
   OnDestroy
 } from '@angular/core';
-import { isAndroid, isIOS } from 'tns-core-modules/platform';
+import { isAndroid, isIOS } from '@nativescript/core/platform';
 
 import { AndroidData } from './common/android-data.model';
 import { IOSData } from './common/ios-data.model';
 import { Shadow } from './common/shadow';
 import { Shape, ShapeEnum } from './common/shape.enum';
-import { View } from 'tns-core-modules/ui/page/page';
-import { StackLayout } from 'tns-core-modules/ui/layouts/stack-layout';
-import { addWeakEventListener, removeWeakEventListener } from "tns-core-modules/ui/core/weak-event-listener";
+import { View } from '@nativescript/core/ui/page/page';
+import { StackLayout } from '@nativescript/core/ui/layouts/stack-layout';
+import { addWeakEventListener, removeWeakEventListener } from "@nativescript/core/ui/core/weak-event-listener";
 
 @Directive({ selector: '[shadow]' })
 export class NativeShadowDirective implements OnInit, OnChanges, AfterViewInit, OnDestroy {
