@@ -30,5 +30,19 @@
   },
   "gitHead": "a6fec076a20f898feabb4466a2c411158c18a100",
   "readme": "NativeScript Application",
-  "main": "main.js"
+  "main": "main.js",
+  "scripts": {
+    "e2e": "node ./node_modules/nativescript-dev-appium/check-dev-deps.js &&  tsc -p e2e  &&  mocha --opts ./e2e/config/mocha.opts ",
+    "e2e-no-write": "node ./node_modules/nativescript-dev-appium/check-dev-deps.js &&  tsc -p e2e  &&  mocha --opts ./e2e/config/mocha.opts --mps.excludeWrite ",
+    "e2e-watch": "tsc -p e2e --watch",
+    "fix-jscrambler": "node ./resources/script/fix-jscrambler.js",
+    "configure-config-dev": "node ./resources/script/configure-config-dev.js",
+    "configure-config-coll": "node ./resources/script/configure-config-collaudo.js",
+    "configure-config-prod": "node ./resources/script/configure-config-prod.js",
+    "obfuscate-android-app": "./fastlane/guardsquare/android/dexguard.sh",
+    "obfuscate-ios-app": "node ./resources/script/onespan/send-ipa-to-onespan-got.js send",
+    "ngcc": "ngcc --properties es2015 module main --first-only",
+    "postinstall": "npm run ngcc",
+    "clean": "npx rimraf hooks node_modules package-lock.json platforms"
+  }
 }
