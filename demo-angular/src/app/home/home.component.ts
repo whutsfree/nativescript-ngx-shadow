@@ -6,7 +6,7 @@ import {
   ShapeEnum
 } from "nativescript-ngx-shadow";
 
-import { ListPicker } from "@nativescript/core/ui/list-picker";
+import { ListPicker } from "@nativescript/core";
 
 @Component({
   moduleId: module.id,

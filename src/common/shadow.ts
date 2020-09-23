@@ -1,10 +1,10 @@
-import { Color } from '@nativescript/core/color';
+import { Color } from '@nativescript/core';
 
 import { AndroidData } from "./android-data.model";
 import { IOSData } from "./ios-data.model";
 import { ShapeEnum } from './shape.enum';
-import { Length } from '@nativescript/core/ui/page/page';
-import { isAndroid, screen } from "@nativescript/core/platform";
+import { Length } from '@nativescript/core';
+import { isAndroid, Screen } from "@nativescript/core";
 
 let LayeredShadow;
 let PlainShadow;
@@ -204,7 +204,7 @@ export class Shadow {
         parseFloat(String(data.shadowRadius)) :
         0.66 * elevation - 0.5;
     nativeView.layer.shouldRasterize = data.rasterize;
-    nativeView.layer.rasterizationScale = screen.mainScreen.scale;
+    nativeView.layer.rasterizationScale = Screen.mainScreen.scale;
     let shadowPath = null;
     if (data.useShadowPath) {
       shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(nativeView.bounds, nativeView.layer.shadowRadius).CGPath;
